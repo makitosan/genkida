@@ -1,0 +1,57 @@
+{
+  "name": "genkida",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "engines": {
+    "node": ">=8.9.0"
+  },
+  "dependencies": {
+    "@tensorflow-models/posenet": "0.1.2",
+    "@tensorflow/tfjs": "0.11.4",
+    "stats.js": "^0.17.0"
+  },
+  "scripts": {
+    "watch": "NODE_ENV=development parcel -d docs --no-hmr src/index.html --open",
+    "prebuild": "rm -rf docs",
+    "build": "NODE_ENV=production parcel build src/index.html -d docs --no-minify --public-url /genkida/",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@vue/component-compiler-utils": "^2.1.0",
+    "babel-plugin-transform-runtime": "~6.23.0",
+    "babel-polyfill": "~6.26.0",
+    "babel-preset-env": "~1.6.1",
+    "babel-preset-es2017": "^6.24.1",
+    "clang-format": "~1.2.2",
+    "dat.gui": "^0.7.1",
+    "eslint": "^4.19.1",
+    "eslint-config-google": "^0.9.1",
+    "jimp": "=0.2.27",
+    "parcel-bundler": "~1.9.7",
+    "vue": "^2.5.16",
+    "vue-template-compiler": "^2.5.16"
+  },
+  "eslintConfig": {
+    "extends": "google",
+    "rules": {
+      "require-jsdoc": 0,
+      "valid-jsdoc": 0
+    },
+    "env": {
+      "es6": true
+    },
+    "parserOptions": {
+      "ecmaVersion": 8,
+      "sourceType": "module"
+    }
+  },
+  "eslintIgnore": [
+    "demos/"
+  ],
+  "alias": {
+    "vue" : "./node_modules/vue/dist/vue.common.js"
+  }
+}
