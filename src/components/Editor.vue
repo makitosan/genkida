@@ -3,17 +3,12 @@
     <div id="single" style="display:none"><canvas ></canvas></div>
     <div id="result"><img id="result_img"/></div>
     <div>
-      <input v-model="srcUrl">
-      <button @click="loadImage">LOAD</button>
-    </div>
-    <div>
       <button @click="genki">GENKI</button>
     </div>
     <div>
       x: <input v-model.number="overlayProperties.x" type="number">
       y: <input v-model.number="overlayProperties.y" type="number">
     </div>
-    <div><button @click="upload">UPLOAD</button></div>
     <input accept="image/*" id="input_img" type="file" @change="fileChanged">
   </div>
 </template>
@@ -23,7 +18,6 @@
     name: 'Editor',
     data: function () {
       return {
-        msg: 'Welcome to Your Vue.js App',
         srcUrl: null,
         originalImage: null, // not-resized original image
         originalOverlayImage: null, // no-resized overlay image
@@ -53,6 +47,8 @@
         let filereader = new FileReader();
         filereader.onload = function() {
           this.imgLoad(filereader.result, this.net);
+
+          this.genki();
         }.bind(this);
         filereader.readAsDataURL(file);
       },
@@ -72,17 +68,20 @@
       },
       genki: function () {
         let url = document.getElementById('parts_genkidama')
-        this.overlay(url.src)
-        this.overlayProperties.w = 50
-        this.overlayProperties.h = 50
+        this.overlay(url.src, 0.8)
+        // this.overlayProperties.w = 50
+        // this.overlayProperties.h = 50
       },
-      overlay: function(url) {
+      overlay: function(url, opacity = 1) {
         Jimp.read(url).then(function (overlay) {
           this.originalOverlayImage = overlay.clone()
           this.srcImage = this.originalImage.clone()
           overlay.resize(this.overlayProperties.w, this.overlayProperties.h)
+          overlay.opacity(opacity)
 
-          this.srcImage.composite(overlay, this.overlayProperties.x, this.overlayProperties.y)
+          this.srcImage.composite(overlay,
+            this.overlayProperties.x - (this.overlayProperties.w / 2),
+            this.overlayProperties.y - (this.overlayProperties.h / 2))
             .getBase64(Jimp.MIME_PNG, function (err, src) {
               this.imgNode.setAttribute('src', src)
 
@@ -194,12 +193,25 @@
           if (pose.score >= minPoseConfidence) {
             this.drawKeypoints(pose.keypoints, minPartConfidence, canvas.getContext('2d'));
             this.drawSkeleton(pose.keypoints, minPartConfidence, canvas.getContext('2d'));
+
+            // size is 3,4 ears distance
+            this.overlayProperties.w = Math.abs(pose.keypoints[3].position.x - pose.keypoints[4].position.x);
+            this.overlayProperties.h = this.overlayProperties.w;
+
+            // 9 or 10
+            // console.log('x' + pose.keypoints[10].position.x);
+            if(pose.keypoints[10].position.y < pose.keypoints[9].position.y) {
+              this.overlayProperties.x = pose.keypoints[10].position.x;
+              this.overlayProperties.y = pose.keypoints[10].position.y - this.overlayProperties.w;
+            } else {
+              this.overlayProperties.x = pose.keypoints[9].position.x;
+              this.overlayProperties.y = pose.keypoints[9].position.y - this.overlayProperties.w;
+            }
           }
         });
 
         let url = canvas.toDataURL().replace(/^data:image\/\w+;base64,/, "");
         let buffer = new Buffer(url, 'base64');
-        console.log(buffer);
 
         // https://github.com/oliver-moran/jimp/issues/231
         Jimp.read(buffer.buffer).then(function (lenna) {
