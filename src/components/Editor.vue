@@ -7,8 +7,6 @@
       <button @click="loadImage">LOAD</button>
     </div>
     <div>
-      <button @click="text_noto">NOTO</button>
-      <button @click="text_mincho">MINCHO</button>
       <button @click="genki">GENKI</button>
     </div>
     <div>
@@ -71,20 +69,6 @@
         }.bind(this)).catch(function (err) {
           console.error(err)
         })
-      },
-      text_noto: function () {
-        this.overlay('./images/notosanscjkjp_black_700x468.png')
-        this.overlayProperties.x = 0
-        this.overlayProperties.y = 0
-        this.overlayProperties.w = 350
-        this.overlayProperties.h = 234
-      },
-      text_mincho: function () {
-        this.overlay('./images/genkai_mincho_700x468.png')
-        this.overlayProperties.x = 0
-        this.overlayProperties.y = 0
-        this.overlayProperties.w = 350
-        this.overlayProperties.h = 234
       },
       genki: function () {
         let url = document.getElementById('parts_genkidama')
