@@ -2,6 +2,7 @@
   <div class="container">
     <div id="single" style="display:none"><canvas ></canvas></div>
     <div id="result"><img id="result_img"/></div>
+    <!--
     <div>
       <button @click="genki">GENKI</button>
     </div>
@@ -9,6 +10,7 @@
       x: <input v-model.number="overlayProperties.x" type="number">
       y: <input v-model.number="overlayProperties.y" type="number">
     </div>
+    -->
     <input accept="image/*" id="input_img" type="file" @change="fileChanged">
   </div>
 </template>
@@ -46,9 +48,33 @@
         let file = event.target.files[0]
         let filereader = new FileReader();
         filereader.onload = function() {
-          this.imgLoad(filereader.result, this.net);
-
-          this.genki();
+          // resize image if the longer side length is greater than 800 px
+          let url = filereader.result.replace(/^data:image\/\w+;base64,/, "");
+          let buffer = new Buffer(url, 'base64');
+          // https://github.com/oliver-moran/jimp/issues/231
+          Jimp.read(buffer.buffer).then(function (tmpImage) {
+            console.log('w:' + tmpImage.bitmap.width + ' h:' + tmpImage.bitmap.height);
+            if(tmpImage.bitmap.width > 800 || tmpImage.bitmap.height > 800) {
+              let newWidth = 0, newHeight = 0;
+              if(tmpImage.bitmap.width >= tmpImage.bitmap.height) {
+                newWidth = 800;
+                newHeight = Math.floor(tmpImage.bitmap.height * 800 / tmpImage.bitmap.width);
+              } else {
+                newHeight = 800;
+                newWidth = Math.floor(tmpImage.bitmap.width * 800 / tmpImage.bitmap.height);
+              }
+              tmpImage.resize(newWidth, newHeight);
+              tmpImage.getBase64(Jimp.MIME_PNG, function (err, src) {
+                this.imgLoad(src, this.net);
+                this.genki();
+              }.bind(this));
+            } else {
+              this.imgLoad(filereader.result, this.net);
+              this.genki();
+            }
+          }.bind(this)).catch(function (err) {
+            console.error(err)
+          });
         }.bind(this);
         filereader.readAsDataURL(file);
       },
@@ -157,6 +183,7 @@
           };
         });
         image.src = src;
+
         return promise;
       },
       decodeSinglePoseAndDrawResults: async function() {
